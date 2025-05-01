@@ -276,15 +276,16 @@ async function createHttpServer(listenPort: number) {
         log(`Using native arm64 builder to build ${arch} image`);
         envAdd.DOCKER_HOST = dockerHostArm64;
       } else {
-        emulated = 'true';
+        // Only run emulated if explicitly set by user
+        // emulated = 'true';
         if (dockerHostAmd64 !== '') {
           log(
-            `No native builder avialable to build ${arch} image; running emulated build on amd64 builder`
+            `No native builder avialable to build ${arch} image; running arm64 build on amd64 builder`
           );
           envAdd.DOCKER_HOST = dockerHostAmd64;
         } else {
           log(
-            `No native builder avialable for ${arch}; running emulated build on arm64 builder`
+            `No native builder avialable for ${arch}; running amd64 build on arm64 builder`
           );
           envAdd.DOCKER_HOST = dockerHostArm64;
         }
