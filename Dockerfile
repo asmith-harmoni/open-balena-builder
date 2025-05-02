@@ -1,19 +1,18 @@
-FROM debian:bookworm
+FROM node:22-bookworm-slim
 
-EXPOSE 80
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     nodejs \
-    npm \
+    node-typescript \
+    jq \
     docker-compose \
     curl \
-    unzip
-
-RUN npm install -g --no-fund --no-update-notifier \
-    typescript
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install balena-cli
-ENV BALENA_CLI_VERSION 19.16.0
+ARG BALENA_CLI_VERSION=21.1.9
 RUN curl -sSL https://github.com/balena-io/balena-cli/releases/download/v$BALENA_CLI_VERSION/balena-cli-v$BALENA_CLI_VERSION-linux-x64-standalone.zip > balena-cli.zip && \
   unzip balena-cli.zip && \
   mv balena-cli/* /usr/local/bin && \
@@ -21,9 +20,14 @@ RUN curl -sSL https://github.com/balena-io/balena-cli/releases/download/v$BALENA
 
 WORKDIR /usr/src/app
 
-COPY . .
+COPY ./src ./src
+COPY ./tsconfig.json ./
+COPY ./package.json ./
+COPY ./package-lock.json ./
 
-RUN npm install --no-fund --no-update-notifier && \
+RUN npm ci --no-fund --no-update-notifier && \
     tsc
+
+COPY ./start.sh ./
 
 CMD ["/bin/sh", "/usr/src/app/start.sh"]
